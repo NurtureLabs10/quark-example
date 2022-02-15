@@ -42,3 +42,9 @@ A single index definition contains the contracts to scan across all EVM chains, 
 mkdir app/staticfiles
 docker-compose -f local.yml up --build
 ```
+
+Then go to the Jupyter Notebook server running inside the docker container and start the Notebook `Run Indexer.ipynb` and then run it.
+
+That will start indexing the chains for the `index_v1` definition and store all the data to PostgreSQL DB also running inside the docker container. 
+
+Once the scanning is done you can build any APIs over the indexed data.
