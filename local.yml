@@ -1,0 +1,72 @@
+version: "3.5"
+
+services:
+
+  postgres:
+    image: postgres
+    ports:
+      - '5432:5432'
+    command: ["postgres", "-cshared_preload_libraries=pg_stat_statements"]
+    env_file: &envfile
+      - .env
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+  # The Fast API/Django Hybrid Web App
+  app:
+    build: .
+    image: &app app
+    restart: unless-stopped
+    command: bash -c "python manage.py collectstatic --noinput && python manage.py migrate && uvicorn app.asgi:app --debug --host 0.0.0.0 --port 8000 --reload"
+    env_file: *envfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/home/app/web
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    ports:
+      - 80:80
+    depends_on:
+      - app
+
+  jupyter:
+    build: .
+    image: *app
+    restart: unless-stopped
+    env_file: *envfile
+    command: bash -c "python manage.py shell_plus --notebook"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./app:/home/app/web
+
+  default_worker:
+    build: .
+    image: *app
+    restart: unless-stopped
+    env_file: *envfile
+    command:
+      [
+        "celery",
+        "--app=app.celery.app",
+        "worker",
+        "--concurrency=2",
+        "--hostname=default_worker@%h",
+        "--loglevel=INFO",
+        "-E",
+      ]
+    volumes:
+      - ./app:/home/app/web
+
+  redis:
+    restart: unless-stopped
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+volumes:
+  static_volume:
