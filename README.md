@@ -40,6 +40,7 @@ A single index definition contains the contracts to scan across all EVM chains, 
 ### Running on local
 ```bash
 mkdir app/staticfiles
+mkdir data
 docker-compose -f local.yml up --build
 ```
 
