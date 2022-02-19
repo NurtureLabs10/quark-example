@@ -1,4 +1,4 @@
-![image](https://i.imgur.com/NhuaxOM.png)
+![image](https://i.imgur.com/vPRsHTz.png)
 # Quark
 ## A fast indexer for all EVM chains
 
